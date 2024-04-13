@@ -8,8 +8,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, "./png.config.json")));
 PngQuant.setBinaryPath(config.binaryPath);
 
-const myPngQuanter = new PngQuant([256, "--quality", config.quality, "--nofs", "-"]);
-
 export default async function compressPNG(inputFile, outputFile, opts = {}) {
   if (!config.binaryPath || !fs.existsSync(config.binaryPath)) {
     console.error("Error: PngQuant 'binaryPath' file not found. Please install it and retry.");
@@ -19,6 +17,7 @@ export default async function compressPNG(inputFile, outputFile, opts = {}) {
   try {
     const inStream = fs.createReadStream(inputFile);
     const outStream = fs.createWriteStream(outputFile);
+    const myPngQuanter = new PngQuant([256, "--quality", config.quality, "--nofs", "-"]);
 
     inStream.pipe(myPngQuanter).pipe(outStream);
 

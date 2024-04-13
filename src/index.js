@@ -1,93 +1,94 @@
-import { AutoModel, AutoProcessor, RawImage } from '@xenova/transformers'
-import sharp from 'sharp' // auto dependency
+import fs from 'fs'
+import path from 'path'
 import { program } from 'commander'
+import fg from 'fast-glob'
 
+import loadModel from './model.js'
+import predict from './predict.js'
+import applyMask from './mask.js'
 import compressPNG from './png.js'
 import compressWEBP from './webp.js'
 
-const { input, output, png, webp } =
+const delay = (ms) => () => new Promise((resolve) => setTimeout(resolve, ms))
+
+const { input, output, png, webp, skip } =
   program
     .version('0.1.0')
     .description('Background cropping CLI app')
-    .requiredOption('-i, --input <input>', 'Input file path or URL')
-    .requiredOption('-o, --output <output>', 'Output file path')
+    .requiredOption('-i, --input <input>', 'Input URL, or filepath, or folder (use glob)')
+    .requiredOption('-o, --output <output>', 'Output filepath, or folder (if glob)')
     .option('-p, --png', 'Compress to PNG', false)
     .option('-w, --webp', 'Compress to WEBP', false)
+    .option('-s, --skip', 'Skip removed background images', false)
     .parse(process.argv)
     .opts();
 
-(async function removeBg(input, output) {
-  console.log('Loading model...');
-  const model = await AutoModel.from_pretrained('briaai/RMBG-1.4', {
-    config: { model_type: 'custom' },
-  });
-  const processor = await AutoProcessor.from_pretrained('briaai/RMBG-1.4', {
-    config: {
-      do_normalize: true,
-      do_pad: false,
-      do_rescale: true,
-      do_resize: true,
-      feature_extractor_type: "ImageFeatureExtractor",
-      image_mean: [0.5, 0.5, 0.5],
-      image_std: [1, 1, 1],
-      resample: 2,
-      rescale_factor: 0.00392156862745098,
-      size: { width: 1024, height: 1024 },
+main();
+
+async function main() {
+  const { model, processor } = await loadModel();
+
+  const isGlob = input.includes('*');
+  const isUrl = input.match(/^https?:\/\//i);
+  if (!isGlob || isUrl) {
+    // handle single file input and output
+    return await work({
+      input,
+      output,
+      model,
+      processor
+    }).catch(console.error)
+  }
+
+  // handle glob and output folder
+  if (!fs.existsSync(output)) {
+    fs.mkdirSync(output, { recursive: true });
+  }
+
+  const entries = fg.stream(input, { onlyFiles: true });
+  for await (let inputFile of entries) {
+    const { name: inputName } = path.parse(inputFile);
+    const outputFile = path.join(output, `${inputName}.png`);
+    if (skip && fs.existsSync(outputFile)) {
+      console.log(' .*. Found and Skipping', inputFile);
+      continue;
     }
-  });
-  console.log('Model loaded.');
 
-  await predict({ input, output, model, processor });
-})(input, output);
-
-// Predict foreground of the given image file or URL
-async function predict({ input, output, model, processor }) {
-  try {
-    const image = await RawImage.fromURL(input);
-
-    // Preprocess image
-    const { pixel_values } = await processor(image);
-    // Predict alpha matte
-    const { output: modelOutput } = await model({ input: pixel_values });
-
-    // Resize mask back to original size
-    const mask = await RawImage
-      .fromTensor(modelOutput[0].mul(255).to('uint8'))
-      .resize(image.width, image.height);
-    // console.log({ image, mask });
-
-    await applyMask(image, mask, output).catch(error => {
-      console.error('Error while applying mask to image:', error);
-    });
-    png && await compressPNG(output, output + '.compressed.png');
-    webp && await compressWEBP(output + '.compressed.png', output + '.compressed.webp');
-
-    console.log('Prediction completed. Result saved as', output);
-  } catch (error) {
-    console.error('Prediction failed:', error);
+    await work({
+      input: inputFile,
+      output: outputFile,
+      model,
+      processor
+    }).catch(console.error)
   }
 }
 
-async function applyMask(
-  { width, height, data: imageData },
-  { data: maskData },
-  output
-) {
-  const outputBuffer = Buffer.alloc(width * height * 4);
-  let idxOutput = 0;
-  let idxImage = 0;
-  for (let idxMask = 0; idxMask < width * height; idxMask++) {
-    outputBuffer[idxOutput++] = imageData[idxImage++]; // Red channel
-    outputBuffer[idxOutput++] = imageData[idxImage++]; // Green channel
-    outputBuffer[idxOutput++] = imageData[idxImage++]; // Blue channel
-    outputBuffer[idxOutput++] = maskData[idxMask]; // Alpha channel
-  }
 
-  // save image as png to disk
-  await sharp(
-    outputBuffer,
-    { raw: { width, height, channels: 4 } }
-  )
-    .png()
-    .toFile(output);
+
+async function work({
+  input,
+  output,
+  model,
+  processor
+}) {
+  try {
+    console.log('Background removal begun -->', input);
+    const { image, mask } = await predict({ input, processor, model });
+
+    await applyMask(image, mask, output).catch(error => {
+      console.error('Error while applying mask to image:', error);
+    })
+      .then(delay(100)); // wait for file to be written
+
+
+    png && await compressPNG(output, output + '.compressed.png')
+      .then(delay(100));
+
+    webp && await compressWEBP(output + '.compressed.png', output + '.compressed.webp')
+      .then(delay(100));
+
+    console.log('Background removal completed -->', output);
+  } catch (error) {
+    console.error('Background removal failed:', error);
+  }
 }
