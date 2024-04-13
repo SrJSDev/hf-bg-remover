@@ -1,3 +1,6 @@
+/**
+ * THIS MODULE NOT IS USE ATM, SHARP IS DOING ALL THE IMAGE OUTPUT
+ */
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from 'url';

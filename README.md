@@ -2,17 +2,21 @@
 
 Leverage Hugging Face AI model [`briaai/RMBG-1.4`](https://huggingface.co/briaai/RMBG-1.4) for image background removal in Node.js.
 
-Saves the result as PNG, and optionally a compressed PNG and WEBP. This will keep the transparency of the image background.
+Saves the result as a compressed PNG, WEBP, and HEIC, which will keep the transparency of the image background. Also supports JPEG.
 
 - required Option: `-i, --input {input}`
   - Input URL, or filepath, or glob*
 - required Option: `-o, --output {output}`
   - Output filepath, or folder (if glob*)
+  - Note: if a filepath, it should be named `.png`.
 - option: `-p, --png`
-  - Copy/compress to PNG
-  - Note: PNG compression is a WIP. It requires the `pngquant` binary to be installed, and its config is manual atm. 🛑
+  - Save/compress to PNG
 - option: `-w, --webp`
-  - Copy/compress to WEBP
+  - Save/compress to WEBP
+- option: `-h, --heic`
+  - Save/compress to HEIC
+- option: `-j, --jpeg`
+  - Save/compress to JPEG
 - option: `-s, --skip`
   - Skip found background-removed images
 
