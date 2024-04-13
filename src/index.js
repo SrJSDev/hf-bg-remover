@@ -52,13 +52,15 @@ async function main() {
   const entries = fg.stream(input, { onlyFiles: true });
   for await (let inputFile of entries) {
     const { name: inputName } = path.parse(inputFile);
-    const outputFile = path.join(output, `${inputName}.png`);
-
-    if (skip && fs.existsSync(outputFile)) {
-      console.log(' .*. Found and Skipping', inputFile);
+    const outputFiles =
+      ['.png', '.webp', '.heic', '.jpeg']
+        .map(ext => path.join(output, `${inputName}${ext}`));
+    if (skip && outputFiles.some(name => fs.existsSync(name))) {
+      console.log(' >> Skipping', inputFile);
       continue;
     }
 
+    const outputFile = path.join(output, `${inputName}.png`);
     await work({
       input: inputFile,
       output: outputFile,
