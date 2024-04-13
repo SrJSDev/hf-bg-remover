@@ -1,6 +1,8 @@
 # hg-bg-remover
 
-```json
+Leverage HuggingFace AI model `briaai/RMBG-1.4` for image background removal.
+
+```txt
   .requiredOption(
     '-i, --input <input>', 'Input file path or URL')
   .requiredOption(
@@ -10,3 +12,5 @@
   .option(
     '-w, --webp', 'Compress to WEBP', false)
 ```
+
+* Note: PNG compression is a WIP. It requires `pngquant` binary to be installed, and config is manual atm.

@@ -15,9 +15,9 @@ const plugins = [
   }),
 ];
 
-export default async function compressWEBP(inputFile, outputFile) {
+export default async function compressWEBP(inputFile, outputFile, opts = {}) {
   try {
-    // keep dir, remove filename, imagemin-webp will add it automatically
+    // keep dir, remove filename -- imagemin-webp will change file tag automatically
     const destination = path.parse(outputFile).dir;
 
     await imagemin([inputFile], {

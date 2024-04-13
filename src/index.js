@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { AutoModel, AutoProcessor, RawImage } from '@xenova/transformers'
 import sharp from 'sharp' // auto dependency
 import { program } from 'commander'

@@ -10,7 +10,7 @@ PngQuant.setBinaryPath(config.binaryPath);
 
 const myPngQuanter = new PngQuant([256, "--quality", config.quality, "--nofs", "-"]);
 
-export default async function compressPNG(inputFile, outputFile) {
+export default async function compressPNG(inputFile, outputFile, opts = {}) {
   if (!config.binaryPath || !fs.existsSync(config.binaryPath)) {
     console.error("Error: PngQuant 'binaryPath' file not found. Please install it and retry.");
     return;
