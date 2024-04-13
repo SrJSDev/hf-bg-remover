@@ -6,16 +6,22 @@
   "type": "module",
   "scripts": {
     "start": "node src/index",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified :(\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "huggingface",
+    "background",
+    "image",
+    "remove",
+    "ai"
+  ],
+  "author": "@srjsdev",
+  "license": "MIT",
   "dependencies": {
-    "@xenova/transformers": "^2.17.0",
-    "commander": "^12.0.0",
-    "imagemin": "^8.0.1",
-    "imagemin-webp": "^8.0.0",
-    "pngquant": "^4.2.0"
+    "@xenova/transformers": "~2.17.0",
+    "commander": "~12.0.0",
+    "imagemin": "~8.0.1",
+    "imagemin-webp": "~8.0.0",
+    "pngquant": "~4.2.0"
   }
 }

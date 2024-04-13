@@ -1,6 +1,10 @@
-# hg-bg-remover
+# hf-bg-remover
 
 Leverage HuggingFace AI model `briaai/RMBG-1.4` for image background removal.
+
+Saves the result as PNG, and optionally a compressed PNG and WEBP. This will keep the transparency of the image background.
+
+> Note: PNG compression is a WIP. It requires `pngquant` binary to be installed, and config is manual atm.
 
 ```txt
   .requiredOption(
@@ -12,5 +16,3 @@ Leverage HuggingFace AI model `briaai/RMBG-1.4` for image background removal.
   .option(
     '-w, --webp', 'Compress to WEBP', false)
 ```
-
-* Note: PNG compression is a WIP. It requires `pngquant` binary to be installed, and config is manual atm.

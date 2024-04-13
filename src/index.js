@@ -27,8 +27,8 @@ const { input, output, png, webp } =
       do_pad: false,
       do_rescale: true,
       do_resize: true,
-      image_mean: [0.5, 0.5, 0.5],
       feature_extractor_type: "ImageFeatureExtractor",
+      image_mean: [0.5, 0.5, 0.5],
       image_std: [1, 1, 1],
       resample: 2,
       rescale_factor: 0.00392156862745098,
@@ -87,5 +87,7 @@ async function applyMask(
   await sharp(
     outputBuffer,
     { raw: { width, height, channels: 4 } }
-  ).png().toFile(output);
+  )
+    .png()
+    .toFile(output);
 }
