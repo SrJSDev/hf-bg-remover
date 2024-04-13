@@ -16,7 +16,7 @@ const { input, output, png, webp } =
     .parse(process.argv)
     .opts();
 
-(async function remove(input, output) {
+(async function removeBg(input, output) {
   console.log('Loading model...');
   const model = await AutoModel.from_pretrained('briaai/RMBG-1.4', {
     config: { model_type: 'custom' },
