@@ -15,11 +15,11 @@ const { input, output, png, webp, skip } =
   program
     .version('0.1.0')
     .description('Background cropping CLI app')
-    .requiredOption('-i, --input <input>', 'Input URL, or filepath, or folder (use glob)')
+    .requiredOption('-i, --input <input>', 'Input URL, or filepath, or folder (via glob)')
     .requiredOption('-o, --output <output>', 'Output filepath, or folder (if glob)')
-    .option('-p, --png', 'Compress to PNG', false)
-    .option('-w, --webp', 'Compress to WEBP', false)
-    .option('-s, --skip', 'Skip removed background images', false)
+    .option('-p, --png', 'Copy/compress to PNG', false)
+    .option('-w, --webp', 'Copy/compress to WEBP', false)
+    .option('-s, --skip', 'Skip found background-removed images', false)
     .parse(process.argv)
     .opts();
 

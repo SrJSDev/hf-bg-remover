@@ -4,18 +4,17 @@ Leverage Hugging Face AI model [`briaai/RMBG-1.4`](https://huggingface.co/briaai
 
 Saves the result as PNG, and optionally a compressed PNG and WEBP. This will keep the transparency of the image background.
 
-> Note: PNG compression is a WIP. It requires `pngquant` binary to be installed, and config is manual atm.
-
-```txt
-  .requiredOption(
-    '-i, --input <input>', 'Input file path or URL')
-  .requiredOption(
-    '-o, --output <output>', 'Output file path')
-  .option(
-    '-p, --png', 'Compress to PNG', false)
-  .option(
-    '-w, --webp', 'Compress to WEBP', false)
-```
+- required Option: `-i, --input {input}`
+  - Input URL, or filepath, or glob*
+- required Option: `-o, --output {output}`
+  - Output filepath, or folder (if glob*)
+- option: `-p, --png`
+  - Copy/compress to PNG
+  - Note: PNG compression is a WIP. It requires the `pngquant` binary to be installed, and its config is manual atm. 🛑
+- option: `-w, --webp`
+  - Copy/compress to WEBP
+- option: `-s, --skip`
+  - Skip found background-removed images
 
 ## Credit 🙏
 
