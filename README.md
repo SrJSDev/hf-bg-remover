@@ -19,6 +19,11 @@ Saves the result as a compressed PNG, WEBP, and HEIC, which will keep the transp
   - Save/compress to JPEG
 - option: `-s, --skip`
   - Skip found background-removed images
+  - Save/compress to JPEG
+- option: `--fxlb`
+  - Apply FX: lens blur
+- option: `--fxsb`
+  - Apply FX: surface blur
 
 ## Credit 🙏
 

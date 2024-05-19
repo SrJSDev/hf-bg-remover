@@ -1,20 +1,24 @@
 import path from 'path'
 import sharp from 'sharp' // auto dependency
 
+import * as effects from './sharp.effects.js'
+
 export default async function applyMask(
   { width, height, data: imageData },
   { data: maskData },
   output,
-  { png, webp, heic, jpeg }
+  { png, webp, heic, jpeg, fxlb, fxsb }
 ) {
   let idxOutput = 0;
   let idxImage = 0;
   const outputBuffer = Buffer.alloc(width * height * 4);
   for (let idxMask = 0; idxMask < width * height; idxMask++) {
-    outputBuffer[idxOutput++] = imageData[idxImage++]; // Red channel
-    outputBuffer[idxOutput++] = imageData[idxImage++]; // Green channel
-    outputBuffer[idxOutput++] = imageData[idxImage++]; // Blue channel
-    outputBuffer[idxOutput++] = maskData[idxMask]; // Alpha channel
+    const alpha = maskData[idxMask];
+    outputBuffer[idxOutput++] = imageData[alpha ? idxImage + 0 : 255]; // Red channel
+    outputBuffer[idxOutput++] = imageData[alpha ? idxImage + 1 : 255]; // Green channel
+    outputBuffer[idxOutput++] = imageData[alpha ? idxImage + 2 : 255]; // Blue channel
+    outputBuffer[idxOutput++] = alpha; // Alpha channel
+    idxImage += 3;
   }
 
   const sharpOpts = { raw: { width, height, channels: 4 } };
@@ -36,17 +40,28 @@ export default async function applyMask(
     optimiseCoding: true, // Enable optimization (default: false)
   };
 
-  const { ext } = path.parse(output)
+  const { ext } = path.parse(output);
+  let mySharp = () => sharp(outputBuffer, sharpOpts);
 
-  png && await sharp(outputBuffer, sharpOpts)
+  if (fxlb) {
+    console.log('fxlb!');
+    const wrapped = mySharp;
+    mySharp = () => effects.lensBlur(wrapped());
+  }
+  if (fxsb) {
+    const wrapped = mySharp;
+    mySharp = () => effects.surfaceBlur(wrapped());
+  }
+
+  png && await mySharp()
     .png(pngOptions).toFile(output);
 
-  webp && await sharp(outputBuffer, sharpOpts)
+  webp && await mySharp()
     .webp(webpOpts).toFile(output.replace(ext, '.webp'));
 
-  heic && await sharp(outputBuffer, sharpOpts)
+  heic && await mySharp()
     .toFormat('heic').toFile(output.replace(ext, '.heic'));
 
-  jpeg && await sharp(outputBuffer, sharpOpts)
+  jpeg && await mySharp()
     .jpeg(jpegOpts).toFile(output.replace(ext, '.jpg'));
 }

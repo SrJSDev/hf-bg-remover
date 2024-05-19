@@ -9,7 +9,7 @@ import applyMask from './sharp.js'
 // import compressPNG from './png.js'
 // import compressWEBP from './webp.js'
 
-const { input, output, png, webp, jpeg, heic, skip } =
+const { input, output, png, webp, jpeg, heic, skip, fxlb, fxsb } =
   program
     .version('0.1.0')
     .description('Background cropping CLI app')
@@ -20,6 +20,8 @@ const { input, output, png, webp, jpeg, heic, skip } =
     .option('-h, --heic', 'Save/compress to HEIC', false)
     .option('-j, --jpeg', 'Save/compress to JPEG', false)
     .option('-s, --skip', 'Skip found background-removed images', false)
+    .option('--fxlb', 'FX: Lense blur', false)
+    .option('--fxsb', 'FX: Surface blur', false)
     .parse(process.argv)
     .opts();
 
@@ -82,7 +84,7 @@ async function work({
     console.log('hf-bg-remover has begun -->', input);
     const { image, mask } = await predict({ input, processor, model });
 
-    await applyMask(image, mask, output, { png, webp, heic, jpeg }).catch(error => {
+    await applyMask(image, mask, output, { png, webp, heic, jpeg, fxlb, fxsb }).catch(error => {
       console.error('Error while applying mask to image:', error);
     })
 
