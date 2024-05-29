@@ -2,10 +2,11 @@ import path from 'path'
 import sharp from 'sharp' // auto dependency
 
 import * as effects from './sharp.effects.js'
+import extractFromMask from './sharp.extract.js'
 
 export default async function applyMask(
   { width, height, data: imageData },
-  { data: maskData },
+  mask,
   output,
   { png, webp, heic, jpeg, fxlb, fxsb }
 ) {
@@ -13,7 +14,7 @@ export default async function applyMask(
   let idxImage = 0;
   const outputBuffer = Buffer.alloc(width * height * 4);
   for (let idxMask = 0; idxMask < width * height; idxMask++) {
-    const alpha = maskData[idxMask];
+    const alpha = mask.data[idxMask];
     outputBuffer[idxOutput++] = imageData[alpha ? idxImage + 0 : 255]; // Red channel
     outputBuffer[idxOutput++] = imageData[alpha ? idxImage + 1 : 255]; // Green channel
     outputBuffer[idxOutput++] = imageData[alpha ? idxImage + 2 : 255]; // Blue channel
@@ -22,6 +23,21 @@ export default async function applyMask(
   }
 
   const sharpOpts = { raw: { width, height, channels: 4 } };
+
+  const { ext } = path.parse(output);
+  let mySharp = async () => sharp(outputBuffer, sharpOpts)
+    .extract(await extractFromMask(mask));
+
+  if (fxlb) {
+    const wrapped = mySharp;
+    mySharp = async () => effects.lensBlur(wrapped());
+  }
+
+  if (fxsb) {
+    const wrapped = mySharp;
+    mySharp = async () => effects.surfaceBlur(wrapped());
+  }
+
   const pngOptions = {
     compressionLevel: 8, // Adjust compression level (0 to 9, default: 6)
     adaptiveFiltering: true, // Enable adaptive filtering (default: true)
@@ -40,28 +56,19 @@ export default async function applyMask(
     optimiseCoding: true, // Enable optimization (default: false)
   };
 
-  const { ext } = path.parse(output);
-  let mySharp = () => sharp(outputBuffer, sharpOpts);
+  png && (await mySharp())
+    .png(pngOptions)
+    .toFile(output);
 
-  if (fxlb) {
-    console.log('fxlb!');
-    const wrapped = mySharp;
-    mySharp = () => effects.lensBlur(wrapped());
-  }
-  if (fxsb) {
-    const wrapped = mySharp;
-    mySharp = () => effects.surfaceBlur(wrapped());
-  }
+  webp && (await mySharp())
+    .webp(webpOpts)
+    .toFile(output.replace(ext, '.webp'));
 
-  png && await mySharp()
-    .png(pngOptions).toFile(output);
+  heic && (await mySharp())
+    .toFormat('heic')
+    .toFile(output.replace(ext, '.heic'));
 
-  webp && await mySharp()
-    .webp(webpOpts).toFile(output.replace(ext, '.webp'));
-
-  heic && await mySharp()
-    .toFormat('heic').toFile(output.replace(ext, '.heic'));
-
-  jpeg && await mySharp()
-    .jpeg(jpegOpts).toFile(output.replace(ext, '.jpg'));
+  jpeg && (await mySharp())
+    .jpeg(jpegOpts)
+    .toFile(output.replace(ext, '.jpg'));
 }

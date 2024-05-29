@@ -8,8 +8,8 @@ const lensKernel = [
   [0, .55, .85, .85, .85, .55, 0],
   [0, 0, .55, .55, .55, 0, 0]
 ];
-export function lensBlur(sharpImage) {
-  return sharpImage
+export async function lensBlur(sharpImage) {
+  return (await sharpImage)
     .convolve({
       width: lensKernel[0].length,
       height: lensKernel.length,
@@ -24,11 +24,11 @@ const surfaceKernel = [
   [4, 16, 26, 16, 4],
   [1, 4, 7, 4, 1]
 ];
-export function surfaceBlur(sharpImage) {
+export async function surfaceBlur(sharpImage) {
   const variable = .9; /// <<< play
   const kernelSum = surfaceKernel.flat().reduce((sum, value) => sum + (value * variable), 0);
   const normalizedKernel = surfaceKernel.map(row => row.map(value => value / kernelSum)).flat();
-  return sharpImage
+  return (await sharpImage)
     .sharpen({
       sigma: 2,
       m1: 1, // "flat" areas
@@ -53,7 +53,7 @@ export function surfaceBlur(sharpImage) {
 }
 
 /*
-export function surfaceBlur2(sharpImage, threshold, radius) {
+export async function surfaceBlur2(sharpImage, threshold, radius) {
   // Define the surface blur kernel
   const kernelSize = radius * 2 + 1;
   const center = radius;
@@ -67,7 +67,7 @@ export function surfaceBlur2(sharpImage, threshold, radius) {
     }
   }
 
-  return sharpImage
+  return (await sharpImage)
     .sharpen({
       sigma: 2,
       m1: 1,
@@ -84,14 +84,14 @@ export function surfaceBlur2(sharpImage, threshold, radius) {
 }
 */
 
-export function smartBlur(sharpImage) {
-  return sharpImage
+export async function smartBlur(sharpImage) {
+  return (await sharpImage)
     .blur(3)
     .sharpen(1, 0.5)
 }
 
-export function sharpen(sharpImage) {
-  return sharpImage
+export async function sharpen(sharpImage) {
+  return (await sharpImage)
     .sharpen(1)
     .convolve({
       height: 3,
@@ -104,8 +104,8 @@ export function sharpen(sharpImage) {
     })
 }
 
-export function emboss(sharpImage) {
-  return sharpImage
+export async function emboss(sharpImage) {
+  return (await sharpImage)
     .convolve([
       -2, -1, 0,
       -1, 1, 1,
@@ -113,8 +113,8 @@ export function emboss(sharpImage) {
     ])
 }
 
-export function edgeDetect(sharpImage) {
-  return sharpImage
+export async function edgeDetect(sharpImage) {
+  return (await sharpImage)
     .threshold(127)
     .convolve({
       height: 3,

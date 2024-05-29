@@ -88,9 +88,6 @@ async function work({
       console.error('Error while applying mask to image:', error);
     })
 
-    // png && await compressPNG(output, output + '.compressed.png')
-    // webp && await compressWEBP(output + '.compressed.png', output + '.compressed.webp')
-
     console.log('hf-bg-remover has completed -->', output);
   } catch (error) {
     console.error('hf-bg-remover failed:', error);
